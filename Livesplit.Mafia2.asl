@@ -14,7 +14,7 @@ init
 
 reset
 {
-	if (current.chapter == 1 && old.chapter == 255) return true;
+    if (current.chapter == 1 && old.chapter == 255) return true;
 }
 
 start
