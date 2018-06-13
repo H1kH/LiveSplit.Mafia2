@@ -15,16 +15,18 @@ init
 {
     vars.fromMenu = false;
     vars.afterFMV = false;
+    vars.afterLoading = false;
+    vars.stopwatch = new Stopwatch();
 }
 
 exit
-{       
+{
     timer.IsGameTimePaused = true;
     vars.afterCrash = true;
 }
 
 update
-{    
+{
     if (current.chapter >= 1 && current.chapter <= 15 && old.chapter == 255)
     {
         timer.IsGameTimePaused = false;
@@ -50,6 +52,14 @@ start
     if (vars.afterFMV && !current.isLoading && old.isLoading)
     {
         vars.afterFMV = false;
+        vars.afterLoading = true;
+        vars.stopwatch.Restart();
+    }
+
+    if (vars.afterLoading && vars.stopwatch.ElapsedMilliseconds > 1400)
+    {
+        vars.afterLoading = false;
+        vars.stopwatch.Reset();
         return true;
     }
 }
