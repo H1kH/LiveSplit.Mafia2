@@ -6,20 +6,19 @@ state("mafia2")     //should work for update 3 - 5
     string20 finalCutscene : 0x16BE7EC, 0x44, 0x104, 0x4, 0x74;     //thanks Jazz
 }
 
-startup
+startup  //script start
 {
     vars.afterCrash = false;
 }
 
-init
+init  //game start
 {
     vars.fromMenu = false;
-    vars.afterFMV = false;
-    vars.afterLoading = false;
+    vars.ready = false;
     vars.stopwatch = new Stopwatch();
 }
 
-exit
+exit  //game exit
 {
     timer.IsGameTimePaused = true;
     vars.afterCrash = true;
@@ -27,38 +26,44 @@ exit
 
 update
 {
-    if (current.chapter >= 1 && current.chapter <= 15 && old.chapter == 255)
+    if (old.chapter == 255 && current.chapter >= 1 && current.chapter <= 15)
     {
         timer.IsGameTimePaused = false;
         vars.afterCrash = false;
+    }
+
+    if (old.chapter != 255 && current.chapter == 255)
+    {
+        vars.ready = false;
+        vars.stopwatch.Reset();
+    }
+
+    if (vars.stopwatch.ElapsedMilliseconds > 0)
+    {
+        if (current.isLoading && vars.stopwatch.IsRunning) vars.stopwatch.Stop();
+        else if (!current.isLoading && !vars.stopwatch.IsRunning) vars.stopwatch.Start();
     }
 }
 
 reset
 {
-    if (current.chapter == 1 && old.chapter == 255) return true;
+    if (old.chapter == 255 && current.chapter == 1) return true;
 }
 
 start
 {
-    if (current.chapter == 1 && old.chapter == 255) vars.fromMenu = true;
+    if (old.chapter == 255 && current.chapter == 1) vars.fromMenu = true;
 
-    if (vars.fromMenu && !current.inCutscene && old.inCutscene)
+    if (vars.fromMenu && old.inCutscene && !current.inCutscene)
     {
         vars.fromMenu = false;
-        vars.afterFMV = true;
-    }
-
-    if (vars.afterFMV && !current.isLoading && old.isLoading)
-    {
-        vars.afterFMV = false;
-        vars.afterLoading = true;
+        vars.ready = true;
         vars.stopwatch.Restart();
     }
 
-    if (vars.afterLoading && vars.stopwatch.ElapsedMilliseconds > 1400)
+    if (vars.ready && vars.stopwatch.ElapsedMilliseconds > 1400)
     {
-        vars.afterLoading = false;
+        vars.ready = false;
         vars.stopwatch.Reset();
         return true;
     }
@@ -69,20 +74,12 @@ split
     //split on next chapter
     if (current.chapter == old.chapter+1 &&
         old.chapter != 255 &&
-        current.chapter >= 1 &&
-        current.chapter <= 15 )
-    {
-        return true;
-    }
+        current.chapter >= 1 && current.chapter <= 15) return true;
 
     //final split
     if (current.chapter == 15 &&
-        current.inCutscene &&
-        !old.inCutscene &&
-        current.finalCutscene == "/sds/fmv/fmv1511.sds")
-    {
-        return true;
-    }
+        !old.inCutscene && current.inCutscene &&
+        current.finalCutscene == "/sds/fmv/fmv1511.sds") return true;
 }
 
 isLoading
