@@ -6,6 +6,14 @@ state("mafia2")     //should work for update 3 - 5
     string20 finalCutscene : 0x16BE7EC, 0x44, 0x104, 0x4, 0x74;     //thanks Jazz
 }
 
+state("Mafia II Definitive Edition")     //Manifest 5603084205041664233
+{
+    bool isLoading : 0x1CC21F8, 0x0, 0x68, 0x50, 0xF0, 0x10, 0x40;
+    bool inCutscene : 0x1CB33C0;
+    byte chapter : 0x1C2E6B0, 0xD0;
+    string20 finalCutscene : 0x01CB2D70, 0x4F0;     //thanks Vojtas 
+}
+
 startup  //script start
 {
     vars.afterCrash = false;
